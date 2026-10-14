@@ -1,0 +1,72 @@
+name: Atualizar dados e publicar painel
+
+on:
+  schedule:
+    - cron: "0 12 * * *"   # todo dia às 12h UTC = 9h em Brasília
+  workflow_dispatch:         # botão "Run workflow" para rodar na hora
+  push:
+    branches: [main]
+    paths: ["docs/**", "scripts/**", "config/**", ".github/workflows/**"]
+
+permissions:
+  contents: write   # commit dos dados atualizados
+  pages: write      # publicar no GitHub Pages
+  id-token: write
+
+concurrency:
+  group: painel
+  cancel-in-progress: false
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    outputs:
+      falhou: ${{ steps.coleta.outcome == 'failure' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Baixar séries e recalcular análise
+        id: coleta
+        continue-on-error: true   # publica mesmo assim (com aviso no site); o job é marcado como falho no fim
+        run: python scripts/atualizar.py
+
+      - name: Salvar dados no repositório
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/data
+          if git diff --cached --quiet; then
+            echo "Sem mudanças nos dados."
+          else
+            git commit -m "Atualiza dados ($(date -u +%Y-%m-%d))"
+            git push
+          fi
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+  publicar:
+    needs: atualizar
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
+
+  avisar:
+    needs: [atualizar, publicar]
+    if: needs.atualizar.outputs.falhou == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "::error::Uma ou mais fontes falharam na coleta. Veja o log do passo 'Baixar séries' no job 'atualizar'. O site foi publicado com os últimos dados válidos e um aviso."
+          exit 1
