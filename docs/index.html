@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Indicadores Econômicos do Brasil</title>
+<meta name="description" content="Painel de indicadores econômicos do Brasil (juros, inflação, câmbio, dívida pública, indústria e desemprego), atualizado diariamente com dados do Banco Central e do IBGE.">
+<link rel="stylesheet" href="assets/estilo.css">
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
+</head>
+<body>
+<header class="topo">
+  <div class="largura">
+    <h1>Indicadores Econômicos do Brasil</h1>
+    <p class="sub">Juros, inflação, câmbio, dívida pública, indústria e emprego, com dados oficiais do Banco Central e do IBGE, atualizados automaticamente todos os dias.</p>
+    <p class="sub" id="atualizacao">Carregando dados…</p>
+  </div>
+</header>
+
+<div id="alertas" class="largura"></div>
+
+<nav class="filtros" aria-label="Filtros">
+  <div class="largura filtros-linha">
+    <label>De <select id="anoIni"></select></label>
+    <label>até <select id="anoFim"></select></label>
+    <div class="atalhos" role="group" aria-label="Períodos prontos">
+      <button type="button" data-atalho="tudo">Tudo</button>
+      <button type="button" data-atalho="2003">Desde 2003</button>
+      <button type="button" data-atalho="10">10 anos</button>
+      <button type="button" data-atalho="5">5 anos</button>
+    </div>
+    <label class="check"><input type="checkbox" id="mostrarPeriodos" checked> Destacar períodos marcantes</label>
+    <span class="menu-secoes"><a href="#indicadores">Indicadores</a> · <a href="#comparar">Comparar</a> · <a href="#conjuntura">Conjuntura</a> · <a href="#dados">Dados</a></span>
+  </div>
+</nav>
+
+<main class="largura">
+  <section id="panorama" class="bloco">
+    <h2>Panorama</h2>
+    <p id="textoPanorama" class="texto"></p>
+  </section>
+
+  <section id="indicadores">
+    <h2>Indicadores</h2>
+    <p class="nota">Cada número e cada texto abaixo é recalculado a cada atualização. A <strong>tendência</strong> compara a variação dos últimos 6 meses com a variação típica da série (detalhes em <a href="#dados">Dados e metodologia</a>). Faixas cinzas: recessões datadas pelo CODACE/FGV e pandemia.</p>
+    <div id="listaIndicadores"></div>
+  </section>
+
+  <section id="comparar" class="bloco">
+    <h2>Comparar dois indicadores</h2>
+    <div class="filtros-linha">
+      <label>Indicador A <select id="compA"></select></label>
+      <label>Indicador B <select id="compB"></select></label>
+      <fieldset class="modo">
+        <legend>Escala</legend>
+        <label><input type="radio" name="modo" value="original"> Valores originais</label>
+        <label><input type="radio" name="modo" value="base100"> Base 100 no início</label>
+        <label><input type="radio" name="modo" value="z" checked> Padronizado</label>
+      </fieldset>
+    </div>
+    <p class="nota" id="notaModo"></p>
+    <div id="graficoComparar" class="grafico"></div>
+    <p id="textoComparar" class="texto"></p>
+    <div class="rodape-grafico" id="rodapeComparar"></div>
+    <button type="button" id="csvComparar" class="botao">Baixar CSV da comparação</button>
+  </section>
+
+  <section id="conjuntura" class="bloco">
+    <h2>Conjuntura: como os indicadores se relacionam</h2>
+    <p class="nota">Correlação de Pearson entre as séries mensais (−1 = direções opostas, 0 = sem relação linear, +1 = mesma direção). O painel inferior de cada gráfico mostra a correlação móvel de 36 meses. As correlações dos textos usam todo o histórico em comum; o filtro de período só muda o que aparece nos gráficos.</p>
+    <div id="listaRelacoes"></div>
+  </section>
+
+  <section id="dados" class="bloco">
+    <h2>Dados e metodologia</h2>
+    <p><button type="button" id="csvTudo" class="botao">Baixar todos os indicadores (CSV, período selecionado)</button>
+       <a class="botao" href="data/indicadores_mensais.csv" download>Série mensal completa (CSV)</a></p>
+    <p class="nota">Os arquivos CSV usam ponto e vírgula como separador e vírgula decimal, o padrão do Excel em português. As séries diárias completas (Selic e dólar) estão em <a href="data/bruto/selic.csv">bruto/selic.csv</a> e <a href="data/bruto/dolar.csv">bruto/dolar.csv</a>.</p>
+    <div class="tabela-rolagem"><table id="tabelaFontes"><thead><tr><th>Indicador</th><th>Série oficial</th><th>Fonte</th><th>Início</th><th>Último dado</th><th>Situação</th></tr></thead><tbody></tbody></table></div>
+    <h3>Notas</h3>
+    <ul id="notasMetodo" class="texto"></ul>
+  </section>
+</main>
+
+<footer class="largura rodape">
+  <p>Dados: Banco Central do Brasil (SGS), IBGE (SIDRA) e FGV/IBRE (via SGS). Períodos de recessão: CODACE/FGV IBRE. Código aberto, atualizado por GitHub Actions.</p>
+</footer>
+
+<script src="assets/app.js"></script>
+</body>
+</html>
